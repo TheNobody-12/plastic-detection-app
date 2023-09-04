@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'plastic-detection-app'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C78AF24367FB4933B84B49F453B13CB8 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_A400E1FB092342308A5BE14EA03B07DB }}
