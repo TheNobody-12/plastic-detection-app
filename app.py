@@ -20,10 +20,6 @@ geolocator = Nominatim(user_agent="object-detection-app")
 
 app = Flask(__name__)
 
-# main_path = os.path.dirname(os.path.realpath(__file__))
-
-# db_s = SQLAlchemy(app)
-
 app.secret_key = 'secret_key'
 
 import sqlite3
@@ -57,6 +53,7 @@ def create_database_tables(db_path):
             probability REAL,
             latitude REAL,
             longitude REAL,
+            feedback TEXT,
             FOREIGN KEY (user_id) REFERENCES user (id)
         )
     """)
@@ -177,7 +174,7 @@ def intersection(box1,box2):
 
 
 # Array of YOLOv8 class labels
-yolo_classes = ["0"]
+yolo_classes = ["Plastic"]
 
 
 # function 3
@@ -202,10 +199,10 @@ def process_output(output, img_width, img_height):
         class_id = row[4:].argmax()
         label = yolo_classes[class_id]
         xc, yc, w, h = row[:4]
-        x1 = (xc - w/2) / 2176 * img_width
-        y1 = (yc - h/2) / 2176 * img_height
-        x2 = (xc + w/2) / 2176 * img_width
-        y2 = (yc + h/2) / 2176 * img_height
+        x1 = (xc - w/2) / 1088 * img_width
+        y1 = (yc - h/2) / 1088 * img_height
+        x2 = (xc + w/2) / 1088 * img_width
+        y2 = (yc + h/2) / 1088 * img_height
         boxes.append([x1, y1, x2, y2, label, prob])
 
     boxes.sort(key=lambda x: x[5], reverse=True)
@@ -225,7 +222,7 @@ def run_model(input):
     :param input: Numpy array in a shape (3,width,height)
     :return: Raw output of YOLOv8 network as an array of shape (1,84,8400)
     """
-    model = ort.InferenceSession("Phase2_TeamAtlanticModel.onnx")
+    model = ort.InferenceSession("Phase3_TeamAtlanticModel.onnx")
     outputs = model.run(["output0"], {"images":input})
     return outputs[0]
 
@@ -241,11 +238,11 @@ def prepare_input(buf):
     """
     img = Image.open(buf)
     img_width, img_height = img.size
-    img = img.resize((2176, 2176))
+    img = img.resize((1088, 1088))
     img = img.convert("RGB")
     input = np.array(img) / 255.0
     input = input.transpose(2, 0, 1)
-    input = input.reshape(1, 3, 2176, 2176)
+    input = input.reshape(1, 3, 1088, 1088)
     return input.astype(np.float32), img_width, img_height
 
 
@@ -307,6 +304,7 @@ def fetch_lat_lon_from_db():
     return filenames_data, lat_lon_data
 
 
+import plotly.graph_objects as go
 
 def Bubble_map(db_name):
     # get the data from the sqlite database 
@@ -323,24 +321,23 @@ def Bubble_map(db_name):
                             color='Plastic_count', color_continuous_scale='plasma',
                             zoom=18, mapbox_style='open-street-map')
     mapbox_fig.update_traces(hovertemplate='<b>%{text}</b><br>' +
-                                    'Plastic Count: %{marker.size:,}<br>' +
+                                    'Plastic Density: %{marker.size:,}<br>' +
                                     'Latitude: %{lat}<br>' +
                                     'Longitude: %{lon}<br>',
                         text=df['filename'])
-   
+    
     # Bar plot
     bar_fig = px.bar(df, x='filename', y='Plastic_count', color='Plastic_count', color_continuous_scale='plasma')
+    # x and y axis labels
+    bar_fig.update_layout(xaxis_title='Image name', yaxis_title='Plastic Density')
     # add filename to the hover data
     bar_fig.update_traces(hovertemplate='<b>%{text}</b><br>' +
                                     'Plastic Count: %{y:,}<br>',
                         text=df['filename'])
-    # line plot
+    
 
-  
     mapbox_plot_div = mapbox_fig.to_html(full_html=False)
     bar_plot_div = bar_fig.to_html(full_html=False)
-    # dist_plot_div = dist_fig.to_html(full_html=False)
-
 
     return mapbox_plot_div, bar_plot_div
 
