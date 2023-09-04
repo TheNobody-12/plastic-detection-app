@@ -20,6 +20,10 @@ geolocator = Nominatim(user_agent="object-detection-app")
 
 app = Flask(__name__)
 
+# main_path = os.path.dirname(os.path.realpath(__file__))
+
+# db_s = SQLAlchemy(app)
+
 app.secret_key = 'secret_key'
 
 import sqlite3
@@ -53,7 +57,6 @@ def create_database_tables(db_path):
             probability REAL,
             latitude REAL,
             longitude REAL,
-            feedback TEXT,
             FOREIGN KEY (user_id) REFERENCES user (id)
         )
     """)
@@ -304,7 +307,6 @@ def fetch_lat_lon_from_db():
     return filenames_data, lat_lon_data
 
 
-import plotly.graph_objects as go
 
 def Bubble_map(db_name):
     # get the data from the sqlite database 
@@ -321,23 +323,24 @@ def Bubble_map(db_name):
                             color='Plastic_count', color_continuous_scale='plasma',
                             zoom=18, mapbox_style='open-street-map')
     mapbox_fig.update_traces(hovertemplate='<b>%{text}</b><br>' +
-                                    'Plastic Density: %{marker.size:,}<br>' +
+                                    'Plastic Count: %{marker.size:,}<br>' +
                                     'Latitude: %{lat}<br>' +
                                     'Longitude: %{lon}<br>',
                         text=df['filename'])
-    
+   
     # Bar plot
     bar_fig = px.bar(df, x='filename', y='Plastic_count', color='Plastic_count', color_continuous_scale='plasma')
-    # x and y axis labels
-    bar_fig.update_layout(xaxis_title='Image name', yaxis_title='Plastic Density')
     # add filename to the hover data
     bar_fig.update_traces(hovertemplate='<b>%{text}</b><br>' +
                                     'Plastic Count: %{y:,}<br>',
                         text=df['filename'])
-    
+    # line plot
 
+  
     mapbox_plot_div = mapbox_fig.to_html(full_html=False)
     bar_plot_div = bar_fig.to_html(full_html=False)
+    # dist_plot_div = dist_fig.to_html(full_html=False)
+
 
     return mapbox_plot_div, bar_plot_div
 
@@ -706,7 +709,12 @@ def log_Testimonials():
     return redirect(url_for('dashboard', _anchor='Testimonials'))
 
 def main():
-    app.run(port=80,debug=True)
+    app.run(debug=True,port = 8080)
 
 if __name__ == "__main__":
     main()
+    # serve(app, host='
+
+
+
+
