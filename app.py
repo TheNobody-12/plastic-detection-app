@@ -662,9 +662,10 @@ def detect():
 
     # Check if a file was uploaded
     if uploaded_file.filename != '':
-        # Read the uploaded file directly into memory
-        file_contents = uploaded_file.read()
-        image = Image.open(io.BytesIO(file_contents))
+        # store file to static folder
+        uploaded_file.save(os.path.join("static", uploaded_file.filename))
+        # Open the uploaded image file in binary mode
+        image = Image.open(uploaded_file)
         boxes = detect_objects_on_image(image)
 
         # Get geolocation from the image metadata
