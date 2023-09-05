@@ -709,7 +709,7 @@ def log_Testimonials():
     return redirect(url_for('dashboard', _anchor='Testimonials'))
 
 def main():
-    app.run(debug=True,port = 8080)
+    app.run(debug=True,port = 80)
 
 if __name__ == "__main__":
     main()
