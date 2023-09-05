@@ -23,14 +23,14 @@ jobs:
       uses: docker/login-action@v2
       with:
         registry: https://testsarthakregis.azurecr.io/
-        username: ${{ secrets.AzureAppService_ContainerUsername_737da6cd5ac441738771dc127768b649 }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_22cb1acf2fe84052a0ab3f2551fddd6a }}
+        username: ${{ secrets.AzureAppService_ContainerUsername_a8f483e90f4840c781ff60056291ccd9 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_111881667063412f8c63a3ce41117243 }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: testsarthakregis.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_737da6cd5ac441738771dc127768b649 }}/testsarthakregis/testsarthakregis/revaapp:${{ github.sha }}
+        tags: testsarthakregis.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_a8f483e90f4840c781ff60056291ccd9 }}/testsarthakregis/testsarthakregis/testsarthakregis/revaapp:${{ github.sha }}
         file: ./Dockerfile
 
   deploy:
@@ -47,5 +47,5 @@ jobs:
       with:
         app-name: 'plasticdetectionreva'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_af99d9e606fe432787f276c105bd1dad }}
-        images: 'testsarthakregis.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_737da6cd5ac441738771dc127768b649 }}/testsarthakregis/testsarthakregis/revaapp:${{ github.sha }}'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_38d341c0bf124b968ef14b28f8ae55c2 }}
+        images: 'testsarthakregis.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_a8f483e90f4840c781ff60056291ccd9 }}/testsarthakregis/testsarthakregis/testsarthakregis/revaapp:${{ github.sha }}'
