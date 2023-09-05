@@ -1,0 +1,51 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy container app to Azure Web App - plasticdetectionreva
+
+on:
+  push:
+    branches:
+      - azure_d
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to registry
+      uses: docker/login-action@v2
+      with:
+        registry: https://testsarthakregis.azurecr.io/
+        username: ${{ secrets.AzureAppService_ContainerUsername_81340f57789447c2b7f01b3f3c90818a }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_99a7a8863315420c8ed9a2dc2fb0c1fe }}
+
+    - name: Build and push container image to registry
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: testsarthakregis.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_81340f57789447c2b7f01b3f3c90818a }}/revaapp:${{ github.sha }}
+        file: ./Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'plasticdetectionreva'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_24d0f45d5d1b4ba1a51e82121e4c95e4 }}
+        images: 'testsarthakregis.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_81340f57789447c2b7f01b3f3c90818a }}/revaapp:${{ github.sha }}'
