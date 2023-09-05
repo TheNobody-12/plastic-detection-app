@@ -131,8 +131,6 @@
 
     <!-- Jquery needed -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="js/scripts.js"></script>
-
     <!-- Function used to shrink nav bar removing paddings and adding black background -->
     <script>
         $(document).ready(function () {
@@ -215,9 +213,6 @@ Canvas
                 <!-- <i class="fa fa-download" aria-hidden="true"></i> -->
                 <br>
                 <div id="notimage" class="hidden">Please select an image</div>
-                <!-- <br><input type="file" idtype="submit" class="btn btn-primary" id="uploadInput"
-                            accept="image/*" required> -->
-                <!-- <button idtype="submit" class="btn btn-primary" id="uploadInput">Upload</button> -->
                 <br>
                 <button class="btn btn-primary">
                     <input type="file" id="file-upload" class="hidden"><br></button>
@@ -536,10 +531,15 @@ Canvas
             console.log(event.target.files[0].name)
             data.append("image_file", event.target.files[0], event.target.files[0].name);
             console.log(data)
+
             const response = await fetch("/detect", {
                 method: "POST",
                 body: data
             });
+
+            const boxes = await response.json();
+            console.log(boxes);
+
 
             fetch("/get_plastic_count/" + event.target.files[0].name)
                 .then(response => response.json())
@@ -550,7 +550,6 @@ Canvas
                 .catch(error => console.error("Error fetching data:", error));
 
 
-            const boxes = await response.json();
             draw_image_and_boxes(event.target.files[0], boxes);
 
 

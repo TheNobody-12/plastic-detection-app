@@ -239,7 +239,7 @@ def prepare_input(buf):
     :param buf: Uploaded file input stream
     :return: Numpy array in a shape (3,width,height) where 3 is number of color channels
     """
-    img = Image.open(buf)
+    img = buf
     img_width, img_height = img.size
     img = img.resize((2176, 2176))
     img = img.convert("RGB")
@@ -633,29 +633,52 @@ def login_reg():
 
 
 
-@app.route("/detect", methods=["POST"])
-def detect():
-    # Get the user ID associated with the session (you may need to implement user authentication and session handling)
-    user_id = session.get("user")
+# @app.route("/detect", methods=["POST"])
+# def detect():
+#     # Get the user ID associated with the session (you may need to implement user authentication and session handling)
+#     user_id = session.get("user")
 
-    if user_id is None:
+#     if user_id is None:
+#         return jsonify({"error": "User not authenticated"})
+
+#     buf = request.files["image_file"]
+#     filename = buf.filename
+#     print(filename)
+import os,io
+# Route to handle image upload and detection
+@app.route('/detect', methods=['POST'])
+def detect():
+    # Check if a user is authenticated (you should implement user authentication)
+    user_id = session.get("user")
+    if not user_id:
         return jsonify({"error": "User not authenticated"})
 
-    buf = request.files["image_file"]
-    filename = buf.filename
-    print(filename)
-    boxes = detect_objects_on_image(buf.stream)
+    # Get the uploaded file from the request
+    uploaded_file = request.files['image_file']
+    filename = uploaded_file.filename
 
-    # Get geolocation from the image metadata
-    geolocation = get_image_geolocation(buf)
+    if not uploaded_file:
+        return jsonify({"error": "No file uploaded"})
+
+    # Check if a file was uploaded
+    if uploaded_file.filename != '':
+        # Read the uploaded file directly into memory
+        file_contents = uploaded_file.read()
+        image = Image.open(io.BytesIO(file_contents))
+        boxes = detect_objects_on_image(image)
+
+        # Get geolocation from the image metadata
+        geolocation = get_image_geolocation(uploaded_file)
 
 
-    # Save the detected objects to the database
-    for box in boxes:
-        x1, y1, x2, y2, object_type, probability = box
-        add_object_detection_data(user_id, filename, x1, y1, x2, y2, object_type, probability, geolocation["latitude"], geolocation["longitude"])
+        # Save the detected objects to the database
+        for box in boxes:
+            x1, y1, x2, y2, object_type, probability = box
+            add_object_detection_data(user_id, filename, x1, y1, x2, y2, object_type, probability, geolocation["latitude"], geolocation["longitude"])
 
-    return jsonify(boxes)
+        return jsonify(boxes)
+    
+    return jsonify({"error": "No file uploaded"})
 
 
 @app.route("/about")
@@ -709,7 +732,7 @@ def log_Testimonials():
     return redirect(url_for('dashboard', _anchor='Testimonials'))
 
 def main():
-    app.run(debug=True,port = 80)
+    serve(app, host="0.0.0.0", port=5000)
 
 if __name__ == "__main__":
     main()
