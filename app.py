@@ -708,11 +708,10 @@ def log_Testimonials():
     # redirect to testimonials id of  home page
     return redirect(url_for('dashboard', _anchor='Testimonials'))
 
-def main():
-    app.run(debug=True,port = 8080)
+
 
 if __name__ == "__main__":
-    main()
+    app.run(host="0.0.0.0",port=80)        
     # serve(app, host='
 
 

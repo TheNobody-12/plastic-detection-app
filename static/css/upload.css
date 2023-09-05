@@ -89,7 +89,7 @@ p {
   display: none;
 }
 
-.uploader .up #file-upload-btn {
+/* .uploader .up #file-upload-btn {
     display: inline-block;
     padding: 1rem 1rem;
     background: #454cad;
@@ -102,7 +102,7 @@ p {
   .uploader .up #file-upload-btn:hover {
     background: #5f77a3;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  }
+  } */
   
 .uploader #file-image {
   display: inline;
