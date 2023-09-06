@@ -12,7 +12,6 @@ import exifread
 import sqlite3
 from fractions import Fraction
 from ultralytics import YOLO
-import sqlite3
 
 
 # import ultralytics
@@ -670,7 +669,6 @@ def login_reg():
 #         uploaded_file.save(os.path.join("static", uploaded_file.filename))
 #         # Open the uploaded image file in binary mode
 #         image = Image.open(uploaded_file)
-import regex as re
 @app.route("/submit", methods = ['GET', 'POST'])
 def get_output():
     if request.method == 'POST':
