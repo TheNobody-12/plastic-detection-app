@@ -15,21 +15,21 @@ from ultralytics import YOLO
 
 
 # import ultralytics
-model_to_load="Phase2_TeamAtlanticModel.onnx"
+model_to_load="Phase3_M_TeamAtlanticWarriors.onnx"
 model = YOLO(model_to_load,task='detect')
 
 # use geopy to get location from lat and lon
 from geopy.geocoders import Nominatim
-geolocator = Nominatim(user_agent="object-detection-app")
+geolocator = Nominatim(user_agent="object-detection-application")
 
 
-app = Flask(__name__)
+application = Flask(__name__)
 
 # main_path = os.path.dirname(os.path.realpath(__file__))
 
-# db_s = SQLAlchemy(app)
+# db_s = SQLAlchemy(application)
 
-app.secret_key = 'secret_key'
+application.secret_key = 'secret_key'
 
 
 # Function to create the database tables
@@ -456,7 +456,7 @@ FLASK ROUTES
 
 
 # ################## Login Register Function ##############################
-@app.route('/register', methods=['GET', 'POST'])
+@application.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         # Handle registration request
@@ -475,7 +475,7 @@ def register():
 
     return render_template('register.html')
 
-@app.route('/login', methods=['GET', 'POST'])
+@application.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
@@ -492,7 +492,7 @@ def login():
 
     return render_template('login.html')
 
-@app.route('/dashboard')
+@application.route('/dashboard')
 def dashboard():
     if 'user' in session:
         user_id = session['user']
@@ -506,14 +506,14 @@ def dashboard():
     else:
         return redirect('/login')
 
-@app.route('/logout')
+@application.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
 
 
 
-@app.route("/")
+@application.route("/")
 def root():
     """
     Site main page handler function.
@@ -526,7 +526,7 @@ def root():
 
 
 # create different route for the database
-@app.route("/database", methods=["GET"])
+@application.route("/database", methods=["GET"])
 def database():
     """
     Handler of /database GET endpoint
@@ -543,14 +543,14 @@ def database():
 
     return jsonify(d_b)
 
-@app.route("/get_lat_lon/<filename>")
+@application.route("/get_lat_lon/<filename>")
 def get_lat_lon(filename):
     print("Received filename:", filename)
     lat_lon = fetch_lat_lon_from_db_1(filename)
     print("Latitude and Longitude:", lat_lon)
     return jsonify(lat_lon)
 
-@app.route("/get_location/<lat>/<lon>")
+@application.route("/get_location/<lat>/<lon>")
 def get_location(lat, lon):
     print("Received lat and lon:", lat, lon)
     location = geolocator.reverse(f"{lat}, {lon}", exactly_one=True)
@@ -572,7 +572,7 @@ def get_location(lat, lon):
     return location_data
 
 # create route to get plastic count for a filename
-@app.route("/get_plastic_count/<filename>")
+@application.route("/get_plastic_count/<filename>")
 def get_plastic_count(filename):
     # Connect to the database
     conn = sqlite3.connect(db_path)
@@ -590,7 +590,7 @@ def get_plastic_count(filename):
 
 
 
-@app.route("/db_data")
+@application.route("/db_data")
 def db_data():
     # Fetch data from the database
     filenames_data, lat_lon_data = fetch_lat_lon_from_db()
@@ -608,68 +608,33 @@ def db_data():
 
     return jsonify(d_b)
 
-@app.route("/db")
+@application.route("/db")
 def db():
     return render_template("db.html")
 
-@app.route("/visualize")
+@application.route("/visualize")
 def bubblemap():
     mapbox, bar = Bubble_map(db_path)
     return render_template('visualize.html', mapbox_plot_div=mapbox, bar_plot_div=bar)
 
-@app.route("/locate")
+@application.route("/locate")
 def locate():
     return render_template("locate.html")
 
 
-@app.route("/home")
+@application.route("/home")
 def home():
     return render_template("home.html")
 
-@app.route("/predict")
+@application.route("/predict")
 def predict():
     return render_template("predict.html")
 
-@app.route("/login_reg")
+@application.route("/login_reg")
 def login_reg():
     return render_template("login.html")
 
-
-
-# # @app.route("/detect", methods=["POST"])
-# # def detect():
-# #     # Get the user ID associated with the session (you may need to implement user authentication and session handling)
-# #     user_id = session.get("user")
-
-# #     if user_id is None:
-# #         return jsonify({"error": "User not authenticated"})
-
-# #     buf = request.files["image_file"]
-# #     filename = buf.filename
-# #     print(filename)
-# import os,io
-# # Route to handle image upload and detection
-# @app.route('/detect', methods=['POST'])
-# def detect():
-#     # Check if a user is authenticated (you should implement user authentication)
-#     user_id = session.get("user")
-#     if not user_id:
-#         return jsonify({"error": "User not authenticated"})
-
-#     # Get the uploaded file from the request
-#     uploaded_file = request.files['image_file']
-#     filename = uploaded_file.filename
-
-#     if not uploaded_file:
-#         return jsonify({"error": "No file uploaded"})
-
-#     # Check if a file was uploaded
-#     if uploaded_file.filename != '':
-#         # store file to static folder
-#         uploaded_file.save(os.path.join("static", uploaded_file.filename))
-#         # Open the uploaded image file in binary mode
-#         image = Image.open(uploaded_file)
-@app.route("/submit", methods = ['GET', 'POST'])
+@application.route("/submit", methods = ['GET', 'POST'])
 def get_output():
     if request.method == 'POST':
         con = sqlite3.connect(db_path)
@@ -723,60 +688,55 @@ def get_output():
     
     return render_template("predict.html")
 
-# @app.route("/updateMap/<float:latitude>/<float:longitude>")
-# def js_update_map(latitude, longitude):
-#     #  document.getElementById('updateButton').addEventListener('click', updateMap(data[0], data[1]));
-#     return f"document.getElementById('updateButton').addEventListener('click', updateMap({latitude}, {longitude}));"
-
-@app.route("/about")
+@application.route("/about")
 def about():
     # redirect to about us id of  home page
     return redirect(url_for('home', _anchor='AboutUs'))
 
-@app.route("/contact")
+@application.route("/contact")
 def contact():
     # redirect to contact us id of  home page
     return redirect(url_for('home', _anchor='Contact'))
 
-@app.route("/team")
+@application.route("/team")
 def team():
     # redirect to team id of  home page
     return redirect(url_for('home', _anchor='team'))
 
-@app.route("/Services")
+@application.route("/Services")
 def Services():
     # redirect to services id of  home page
     return redirect(url_for('home', _anchor='Services'))
 
-@app.route("/Testimonials")
+@application.route("/Testimonials")
 def Testimonials():
     # redirect to testimonials id of  home page
     return redirect(url_for('home', _anchor='Testimonials'))
 
-@app.route("/log_about")
+@application.route("/log_about")
 def log_about():
     # redirect to about us id of  home page
     return redirect(url_for('dashboard', _anchor='AboutUs'))
 
-@app.route("/log_contact")
+@application.route("/log_contact")
 def log_contact():
     # redirect to contact us id of  home page
     return redirect(url_for('dashboard', _anchor='Contact'))
 
-@app.route("/log_team")
+@application.route("/log_team")
 def log_team():
     # redirect to team id of  home page
     return redirect(url_for('dashboard', _anchor='team'))
 
-@app.route("/log_Services")
+@application.route("/log_Services")
 def log_Services():
     # redirect to services id of  home page
     return redirect(url_for('dashboard', _anchor='Services'))
 
-@app.route("/log_Testimonials")
+@application.route("/log_Testimonials")
 def log_Testimonials():
     # redirect to testimonials id of  home page
     return redirect(url_for('dashboard', _anchor='Testimonials'))
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0",port=80)     
+    application.run(host="0.0.0.0",port=80)     
