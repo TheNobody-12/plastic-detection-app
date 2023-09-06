@@ -11,7 +11,13 @@ import numpy as np
 import exifread
 import sqlite3
 from fractions import Fraction
+from ultralytics import YOLO
+import sqlite3
 
+
+# import ultralytics
+model_to_load="Phase2_TeamAtlanticModel.onnx"
+model = YOLO(model_to_load,task='detect')
 
 # use geopy to get location from lat and lon
 from geopy.geocoders import Nominatim
@@ -26,7 +32,6 @@ app = Flask(__name__)
 
 app.secret_key = 'secret_key'
 
-import sqlite3
 
 # Function to create the database tables
 def create_database_tables(db_path):
@@ -48,19 +53,18 @@ def create_database_tables(db_path):
         CREATE TABLE IF NOT EXISTS object_detection_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
-            filename TEXT,
-            x1 INTEGER,
-            y1 INTEGER,
-            x2 INTEGER,
-            y2 INTEGER,
+            filename VARCHAR(100),
+            x1 FLOAT,
+            y1 FLOAT,
+            x2 FLOAT,
+            y2 FLOAT,
             object_type TEXT,
-            probability REAL,
+            probability FLOAT,
             latitude REAL,
             longitude REAL,
             FOREIGN KEY (user_id) REFERENCES user (id)
         )
     """)
-
     # Commit the changes and close the connection
     connection.commit()
     connection.close()
@@ -397,7 +401,7 @@ def add_object_detection_data(user_id, filename, x1, y1, x2, y2, object_type, pr
         connection = sqlite3.connect(db_path)
         cursor = connection.cursor()
         cursor.execute(
-            "INSERT INTO object_detection_data (user_id, filename, x1, y1, x2, y2, object_type, probability, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO object_detection_data (user_id, filename, x1, y1, x2, y2, object_type, probability, latitude, longitude) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?,?)",
             (user_id, filename, x1, y1, x2, y2, object_type, probability, latitude, longitude)
         )
         connection.commit()
@@ -566,7 +570,7 @@ def get_location(lat, lon):
             "postcode": "Unknown"
         }
 
-    return jsonify(location_data)
+    return location_data
 
 # create route to get plastic count for a filename
 @app.route("/get_plastic_count/<filename>")
@@ -633,54 +637,98 @@ def login_reg():
 
 
 
-# @app.route("/detect", methods=["POST"])
-# def detect():
-#     # Get the user ID associated with the session (you may need to implement user authentication and session handling)
-#     user_id = session.get("user")
+# # @app.route("/detect", methods=["POST"])
+# # def detect():
+# #     # Get the user ID associated with the session (you may need to implement user authentication and session handling)
+# #     user_id = session.get("user")
 
-#     if user_id is None:
+# #     if user_id is None:
+# #         return jsonify({"error": "User not authenticated"})
+
+# #     buf = request.files["image_file"]
+# #     filename = buf.filename
+# #     print(filename)
+# import os,io
+# # Route to handle image upload and detection
+# @app.route('/detect', methods=['POST'])
+# def detect():
+#     # Check if a user is authenticated (you should implement user authentication)
+#     user_id = session.get("user")
+#     if not user_id:
 #         return jsonify({"error": "User not authenticated"})
 
-#     buf = request.files["image_file"]
-#     filename = buf.filename
-#     print(filename)
-import os,io
-# Route to handle image upload and detection
-@app.route('/detect', methods=['POST'])
-def detect():
-    # Check if a user is authenticated (you should implement user authentication)
-    user_id = session.get("user")
-    if not user_id:
-        return jsonify({"error": "User not authenticated"})
+#     # Get the uploaded file from the request
+#     uploaded_file = request.files['image_file']
+#     filename = uploaded_file.filename
 
-    # Get the uploaded file from the request
-    uploaded_file = request.files['image_file']
-    filename = uploaded_file.filename
+#     if not uploaded_file:
+#         return jsonify({"error": "No file uploaded"})
 
-    if not uploaded_file:
-        return jsonify({"error": "No file uploaded"})
+#     # Check if a file was uploaded
+#     if uploaded_file.filename != '':
+#         # store file to static folder
+#         uploaded_file.save(os.path.join("static", uploaded_file.filename))
+#         # Open the uploaded image file in binary mode
+#         image = Image.open(uploaded_file)
+import regex as re
+@app.route("/submit", methods = ['GET', 'POST'])
+def get_output():
+    if request.method == 'POST':
+        con = sqlite3.connect(db_path)
+        user_id = session.get("user")
 
-    # Check if a file was uploaded
-    if uploaded_file.filename != '':
-        # store file to static folder
-        uploaded_file.save(os.path.join("static", uploaded_file.filename))
-        # Open the uploaded image file in binary mode
-        image = Image.open(uploaded_file)
-        boxes = detect_objects_on_image(image)
+        img = request.files['my_image']
+        filename = img.filename
 
-        # Get geolocation from the image metadata
-        geolocation = get_image_geolocation(uploaded_file)
+        source = "static/" + img.filename	
+        img.save(source)
 
+        results = model(source,imgsz=2176, conf=0.25)  # results list
+        
+        r = results[0]  # img1 predictions (tensor)
+        im_array = r.plot(class_names=['0'],conf=0)  # plot a BGR numpy array of predictions
+        im = Image.fromarray(im_array[..., ::-1])  # RGB PIL image
 
-        # Save the detected objects to the database
-        for box in boxes:
-            x1, y1, x2, y2, object_type, probability = box
-            add_object_detection_data(user_id, filename, x1, y1, x2, y2, object_type, probability, geolocation["latitude"], geolocation["longitude"])
+        im.save('static/detected_{0}.jpg'.format(img.filename))
 
-        return jsonify(boxes)
+        detect_path = "static/detected_{0}.jpg".format(img.filename)
+
+        boxes = results[0].boxes.xyxy.tolist() # contain coordinates of the detected objects
+        probability = results[0].boxes.conf.tolist()
+
+        # # Get geolocation from the image metadata
+        geolocation = get_image_geolocation(img)
+        for i in range(len(boxes)):
+            x1 = boxes[i][0]
+            y1 = boxes[i][1]
+            x2 = boxes[i][2]
+            y2 = boxes[i][3]
+            print(type(x1), type(y1), type(x2), type(y2))
+            object_type = "Plastic"
+            c = probability[i]
+            latitude = geolocation.get("latitude")
+            longitude = geolocation.get("longitude")
+
+            add_object_detection_data(user_id, filename, x1, y1, x2, y2, object_type, c, latitude, longitude)
+      
+        latitude = geolocation.get("latitude")
+        longitude = geolocation.get("longitude")
+        print(latitude, longitude)
+        # return save im to static folder 
+        location = geolocator.reverse(f"{latitude}, {longitude}", exactly_one=True)
+
+        print("Location:", location)
+        address = location.address
+        country = location.raw.get("address", {}).get("country")
+        postcode = location.raw.get("address", {}).get("postcode")
+        return  render_template('predict.html', image_name = detect_path, lat=latitude, lon=longitude, address=address, country=country, postcode=postcode)
     
-    return jsonify({"error": "No file uploaded"})
+    return render_template("predict.html")
 
+# @app.route("/updateMap/<float:latitude>/<float:longitude>")
+# def js_update_map(latitude, longitude):
+#     #  document.getElementById('updateButton').addEventListener('click', updateMap(data[0], data[1]));
+#     return f"document.getElementById('updateButton').addEventListener('click', updateMap({latitude}, {longitude}));"
 
 @app.route("/about")
 def about():
@@ -734,6 +782,7 @@ def log_Testimonials():
 
 def main():
     serve(app, host="0.0.0.0", port=5000)
+    # app.run(debug=True)
 
 if __name__ == "__main__":
     main()
