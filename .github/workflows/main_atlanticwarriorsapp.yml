@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'AtlanticWarriorsApp'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_24291AB1B41C4E4FB6DA2F0A78F856AB }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0852F1C625EA456B809457180DBFE7EC }}
