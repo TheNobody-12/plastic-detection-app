@@ -29,7 +29,7 @@
     - Flask
     #### ML Training
     - Google Colab
-    - Azure Machin elear
+    - Azure Machin learning
     - Keras
     - Tensorflow
     - Pandas
