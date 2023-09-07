@@ -17,7 +17,7 @@
     ` pip install -r requirements.txt`
 
     - Run code file using below command.
-    ` python app.py`
+    ` python application.py`
 
 2.	Software dependencies
     #### Frontend
