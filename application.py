@@ -666,7 +666,6 @@ def get_output():
             y1 = boxes[i][1]
             x2 = boxes[i][2]
             y2 = boxes[i][3]
-            print(type(x1), type(y1), type(x2), type(y2))
             object_type = "Plastic"
             c = probability[i]
             latitude = geolocation.get("latitude")
@@ -676,15 +675,14 @@ def get_output():
       
         latitude = geolocation.get("latitude")
         longitude = geolocation.get("longitude")
-        print(latitude, longitude)
         # return save im to static folder 
         location = geolocator.reverse(f"{latitude}, {longitude}", exactly_one=True)
 
-        print("Location:", location)
         address = location.address
         country = location.raw.get("address", {}).get("country")
         postcode = location.raw.get("address", {}).get("postcode")
-        return  render_template('predict.html', image_name = detect_path, lat=latitude, lon=longitude, address=address, country=country, postcode=postcode)
+        total_plastic = len(boxes)
+        return  render_template('predict.html', image_name = detect_path, lat=latitude, lon=longitude, address=address, country=country, postcode=postcode, total_plastic=total_plastic)
     
     return render_template("predict.html")
 
@@ -737,6 +735,6 @@ def log_Services():
 def log_Testimonials():
     # redirect to testimonials id of  home page
     return redirect(url_for('dashboard', _anchor='Testimonials'))
-
+ 
 if __name__ == "__main__":
     application.run(host="0.0.0.0",port=80)     

@@ -8,10 +8,6 @@
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}"> -->
     <!-- <link rel="stylesheet" href="/static/css/footer.css"> -->
     <link rel="stylesheet" href="static/css/nav.css">
-    <!-- 
-    <link rel="stylesheet" href="path-to-your-owl-carousel-css/owl.carousel.min.css">
-    <link rel="stylesheet" href="path-to-your-owl-carousel-css/owl.theme.default.min.css">
-    <link rel="stylesheet" href="/static/css/tiles.css"> -->
 
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -48,24 +44,37 @@
     <link rel="stylesheet" href="static/css/about-01.css" />
     <link rel="stylesheet" href="static/css/upload.css" />
 
-
-    <!-- TEAM ASSET VENDOR JS -->
-    <!-- Google Fonts -->
-    <!-- <link
-        href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
-        rel="stylesheet"> -->
-    <!-- Vendor CSS Files -->
-    <!-- <link href="/static/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet"> -->
-    <!-- Template Main CSS File -->
-    <!-- <link href="/static/css/style1.css" rel="stylesheet"> -->
-
-
-
-    <!-- Testimonials -->
-
-
-    <!-- Your custom CSS styles -->
     <style>
+        .feedback-form {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px #888888;
+            width: 400px;
+        }
+
+        .btn {
+            margin: 5px;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .btn-sm {
+            font-size: 14px;
+        }
+
+        .fa-smile,
+        .fa-frown {
+            font-size: 24px;
+        }
+
+        .small {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
         /* Style the dropdown content (hidden by default) */
         .dropdown .dropdown-content {
             display: none;
@@ -155,47 +164,7 @@
     <center>
         <h1 style="margin: 50px 0px;">Object Detection</h1>
     </center>
-    <!-- Upload Section -->
-    <!-- <div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6 mx-auto">
-            <div class="card">
-                <div class="card-header">
-                    Upload Drone Image
-                </div>
-                <div class="card-body">
-                    <form id="uploadForm">
-                        <div class="form-group">
-                            <br><input type="file" idtype="submit" class="btn btn-primary" id="uploadInput"
-                                accept="image/*" required>
-                            <button idtype="submit" class="btn btn-primary" id="uploadInput">Upload</button>
-                            <br>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> -->
-
-    <!-- HTML content
-<div class="popup" id="popup">
-    <img src="" alt="Enlarged Image" id="popupImage">
-</div>
-<br> <br>
-Canvas
-<div class="canvas-container">
-    <canvas id="canvas"></canvas>
-</div> -->
-
-
     <div id="updateButton"></div>
-
-
-
-
-
-
 
     <!-- <div id="objectTable"></div> -->
 
@@ -267,6 +236,7 @@ Canvas
                             }
                         </style>
                         <div class="locationDiv">
+                            <h3>Total Number of Plastic Detected: {{ total_plastic }}</h3>
                             <h3>Latitude: <span id="latitude">{{ lat }}</span></h3>
                             <h3>Longitude: <span id="longitude">{{ lon }}</span></h3>
                             <br>
@@ -275,6 +245,44 @@ Canvas
                             <h3>Country : <span id="country">{{ country }}</span></h3>
                             <h3>Postcode : <span id="postcode">{{ postcode }}</span></h3>
                         </div>
+                        <div class="feedback" >
+                            <center>
+                                <div id="feedback" class="d-flex align-items-center justify-content-center text-center pt-2">
+                                    <div>
+                                        <div data-controller="feedback" data-feedback-url="/images/38b01f1d-5130-4fda-a11e-1cef74e67dda"
+                                            data-feedback-id="38b01f1d-5130-4fda-a11e-1cef74e67dda" class="feedback-form">
+                                            <div class="small d-flex flex-row flex-nowrap align-items-center justify-content-center"
+                                                data-target="feedback.inputBar">
+                                                <span class="mr-1" style="color: #000;">Rate this result:</span>
+                                                <div class="d-flex">
+                                                    <a class="btn btn-sm" title="Rate good" data-action="click->feedback#rateGood" href="#"
+                                                        ondragstart="return false;">
+                                                        <i class="fal fa-smile fa-2x">😊</i>
+                                                    </a>
+                                                    <a class="btn btn-sm" title="Rate bad" data-action="click->feedback#rateBad" href="#"
+                                                        ondragstart="return false;">
+                                                        <i class="fal fa-frown fa-2x">😞</i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="small" data-target="feedback.thanksBar" style="display: none;">Thanks for your
+                                                feedback!
+                                            </div>
+                                            <!-- The feedback modal -->
+                                            <div id="feedback-modal" class="modal" style="display: none;">
+                                                <div class="modal-content" style="display: block; margin: 0 30%; width:40%; margin-top:80px">
+                                                    <p>What went wrong?</p>
+                                                    <textarea id="feedback-text" rows="4" cols="40"></textarea><br>
+                                                    <button id="submit-feedback" class="btn btn-success" onclick="get_feedback()">Submit</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                        </center>
+                    </div>
+                
                         <!-- <span id="ImagePlasticCount"></span><br> -->
                     </div>
 
